@@ -1,25 +1,123 @@
+Reproducible Research: Peer Assignment #1
+========================================================
+
+Load the data:
+---------------
+
+```{r}
+if (!file.exists("activity.csv")) {
+    unzip("activity.zip")
+}
+activity<-read.csv("activity.csv", stringsAsFactors = FALSE)
+str(activity)
+```
+
+What is the total number of steps taken per day?
+----------------------------------------------------
+```{r}
+totsteps<- tapply(activity$steps, activity$date, sum, na.rm=TRUE)
+```
+
+What are the mean and median steps taken?
+----------------------------------------------------
+```{r}
+mean(totsteps)
+median(totsteps)
+```
+
+Make a histogram of the steps taken:
+----------------------------------------------------
+```{r}
+require("ggplot2")
+qplot(totsteps, xlab = "Total steps", ylab = "Frequency")
+```
+
+What is the average daily activity pattern?
+----------------------------------------------------
+```{r}
+meansteps<- tapply(activity$steps, activity$interval, mean, na.rm=TRUE)
+```
+
+Plot the daily average activity pattern:
+--
+```{r}
+plot(meansteps, type="l", col="blue", xlab="time of day", ylab="mean steps")
+```
+
+Imputing missing values:
+----------------------------------------------------
+Lets determine how many step values are missing
+--
+```{r}
+summary(activity$steps)
+```
+
+Lets use the Hmisc package to impute th missing step values and create a new column for this infomation:
+--
+```{r}
+require(Hmisc)
+activityimp<- activity
+activityimp$steps <- with(activityimp, impute(steps, mean))
+str(activityimp$steps)
+```
+
+Lets use tapply function to get the imputed total steps
+--
+```{r}
+totstepsimp<-tapply( activityimp$steps,  activityimp$date, sum)
+```
+
+Compare previous mean and median total steps with mean and median total imputed steps data:
+--
+```{r}
+mean(totsteps)
+mean(totstepsimp)
+
+median(totsteps)
+median(totstepsimp)
+```
+
+Make a histogram of the imputed steps data:
+----------------------------------------------------
+```{r}
+qplot(totstepsimp, xlab = "Total steps", ylab = "Frequency")
+```
+
+Are there differences in activity patterns between weekdays and weekends?
+--------------------------------------------------------------------------
+Create Subsets for weekends and weekdays:
+First let's change the imputed date and time data into something cleaner using as.POSIXct
+--
+
+```{r}
+activityimp$date.time <- as.POSIXct(paste(activityimp$date, time), format = "%Y-%m-%d %H.%M", tz = "GMT")
+```
+
+
+```{r}
+
+weekend <- subset(activityimp, weekdays(activityimp$date.time) %in% c("Saturday", "Sunday"))
+
+weekdays <- subset(activityimp, weekdays(activityimp$date.time) %in% c("Monday", "Tuesday", "Wednesday","Thursday", "Friday"))
+
+weekendsteps<-tapply(weekend$steps, weekend$interval, mean)
+weekdaysteps<-tapply(weekdays$steps, weekdays$interval, mean)
+```
+
+Plot the weekend and weekday steps:
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-
-
-## Loading and preprocessing the data
+```{r}
+par(mfrow=c(1,2)) 
+plot(weekdaysteps, type="l", ylab="Number of Steps", xlab="Interval", main="Weekday Steps")
+plot(weekendsteps, type="l", ylab="Number of Steps", xlab="Interval", main="Weekend Steps")
+```
 
 
 
-## What is mean total number of steps taken per day?
 
 
 
-## What is the average daily activity pattern?
 
 
 
-## Imputing missing values
 
-
-
-## Are there differences in activity patterns between weekdays and weekends?
