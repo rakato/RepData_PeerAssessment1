@@ -90,7 +90,7 @@ First let's change the imputed date and time data into something cleaner using a
 --
 
 ```{r}
-activityimp$date.time <- as.POSIXct(paste(activityimp$date, time), format = "%Y-%m-%d %H.%M", tz = "GMT")
+activityimp$date.time<-as.Date(activityimp$date, "%Y-%m-%d")
 ```
 
 
